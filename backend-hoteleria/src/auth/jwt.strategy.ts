@@ -14,7 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: { email: string; sub: any }) {
-        console.log('JWT Payload:', payload);
         let userId;
         if (typeof payload.sub === 'number') {
             userId = payload.sub;
@@ -23,7 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         } else {
             throw new UnauthorizedException(`Invalid token payload: sub must be a number or string, got ${typeof payload.sub}`);
         }
-        console.log('Converted userId:', userId);
         if (isNaN(userId) || userId <= 0) {
             throw new UnauthorizedException(`Invalid token payload: sub must be a valid number, got ${userId}`);
         }
