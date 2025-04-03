@@ -31,7 +31,6 @@ export default function Home() {
             return;
         }
 
-        console.log('Token being sent:', token); // Depuración
         const fetchData = async () => {
             try {
                 const [userResponse, hotelsResponse] = await Promise.all([
