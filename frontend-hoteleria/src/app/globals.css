@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #EC820A; /* Naranja corporativo */
+  --secondary: #FFFFFF; /* Blanco */
+  --text: #333333; /* Negro */
+}
+
+body {
+  background-color: var(--secondary);
+  color: var(--text);
+}
