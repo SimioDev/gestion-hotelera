@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { HotelsService } from './hotels.service';
 import { CreateHotelDto } from './dto/create-hotel.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -12,6 +12,9 @@ export class HotelsController {
 
   @Post()
   create(@Body() createHotelDto: CreateHotelDto, @GetUser() user: User) {
+    if (!user.chainName || user.chainName.trim() === '') {
+      throw new BadRequestException('No puedes crear nuevos puntos sin definir el nombre de la cadena principal primero.');
+    }
     return this.hotelsService.create(createHotelDto, user);
   }
 
