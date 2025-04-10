@@ -45,6 +45,8 @@ export default function Home() {
                 setHotels(hotelsResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error.response?.data || error.message);
+                /*
+                -----> Temporalmente lo he quitado para poder retornar sin indicios de error al login tras finalizar JWT
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -53,6 +55,7 @@ export default function Home() {
                     localStorage.removeItem('token');
                     router.push('/login');
                 });
+                */
             }
         };
         fetchData();
@@ -94,11 +97,11 @@ export default function Home() {
                 text: 'Hotel creado exitosamente',
             });
         } catch (error) {
-            console.error('Error creating hotel:', error);
+            console.error('Error creating hotel:', error.response?.data || error.message);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Error al crear el hotel',
+                text: error.response?.data?.message || 'Error al crear el hotel',
             });
         }
     };
@@ -244,8 +247,8 @@ export default function Home() {
                                     <FaTrash size={16} />
                                 </button>
                                 <h2 className="text-lg font-semibold text-text">{hotel.name}</h2>
-                                <p className="text-sm text-gray-600">{hotel.city}</p>
-                                <p className="text-sm text-gray-500">Dirección: {hotel.address}</p>
+                                <p className="text-sm text-gray-600">Ciudad: {hotel.city}</p>
+                                <p className="text-sm text-gray-500 mt-2">Dirección: {hotel.address}</p>
                                 <p className="text-sm text-gray-500">Teléfono: {hotel.phone}</p>
                                 <p className="text-sm text-gray-500">Empleados: {hotel.employees}</p>
                                 {hotel.services && hotel.services.length > 0 && (
@@ -261,13 +264,13 @@ export default function Home() {
                 {view === 'user' && (
                     <div className="bg-white p-4 rounded-lg shadow-md">
                         <h2 className="text-lg font-semibold text-text">Información del Usuario</h2>
-                        <p className="text-sm text-gray-600">Email: {user?.email}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 mt-2">
                             Nombre de la cadena: {user?.chainName || 'Sin nombre'}
                         </p>
+                        <p className="text-sm text-gray-600">Email: {user?.email}</p>
                         <button
                             onClick={handleUpdateChainName}
-                            className="mt-2 bg-primary text-secondary py-1 px-3 rounded-md hover:bg-opacity-90"
+                            className="mt-2 w-full bg-primary text-secondary py-2 rounded-md hover:bg-opacity-90"
                         >
                             Editar nombre de la cadena
                         </button>
