@@ -7,6 +7,9 @@ export class Hotel {
     id: number;
 
     @Column()
+    type: string;
+
+    @Column()
     name: string;
 
     @Column('jsonb')
@@ -18,14 +21,29 @@ export class Hotel {
     @Column()
     city: string;
 
-    @Column()
+    @Column({ nullable: true })
     phone: string;
 
-    @Column()
+    @Column({ nullable: true })
     employees: number;
 
-    @Column('text', { array: true, nullable: true })
+    @Column('text', { array: true })
     services: string[];
+
+    @Column('decimal', { nullable: true })
+    price: number;
+
+    @Column({ nullable: true })
+    logoUrl: string;
+
+    @Column({ nullable: true })
+    managerName: string;
+
+    @Column({ nullable: true })
+    managerEmail: string;
+
+    @Column('text', { array: true, nullable: true })
+    images: string[];
 
     @ManyToOne(() => User, (user) => user.hotels)
     user: User;
