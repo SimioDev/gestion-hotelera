@@ -15,6 +15,7 @@ export class HotelsService {
   async create(createHotelDto: CreateHotelDto, user: User): Promise<Hotel> {
     const hotel = this.hotelsRepository.create({
       ...createHotelDto,
+      services: createHotelDto.services || [],
       user,
     });
     return this.hotelsRepository.save(hotel);

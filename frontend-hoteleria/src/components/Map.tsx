@@ -1,10 +1,10 @@
 'use client';
 
-import {MapContainer, TileLayer, Marker, Popup, useMap} from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { Hotel } from '@/types/hotel';
-import {useEffect} from "react";
+import { useEffect } from 'react';
 
 const customIcon = L.icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
@@ -55,17 +55,63 @@ export default function Map({ hotels, center, onMapClick, tempLocation }: MapPro
                 attribution="Desarrollado por: Nestor Cabrera"
             />
             <MapUpdater center={center} onMapClick={onMapClick} />
-            {hotels.map((hotel) => (
-                <Marker
-                    key={hotel.id}
-                    position={[hotel.location.coordinates[1], hotel.location.coordinates[0]]}
-                    icon={customIcon}
-                >
-                    <Popup>
-                        {hotel.name} - {hotel.city}
-                    </Popup>
-                </Marker>
-            ))}
+            {hotels.map((hotel) => {
+                if (
+                    hotel.location?.coordinates &&
+                    Array.isArray(hotel.location.coordinates) &&
+                    hotel.location.coordinates.length === 2 &&
+                    typeof hotel.location.coordinates[0] === 'number' &&
+                    typeof hotel.location.coordinates[1] === 'number'
+                ) {
+                    return (
+                        <Marker
+                            key={hotel.id}
+                            position={[hotel.location.coordinates[1], hotel.location.coordinates[0]]}
+                            icon={customIcon}
+                        >
+                            <Popup>
+                                <strong>{hotel.type === 'hotel' ? hotel.name : `${hotel.type} - ${hotel.name}`}</strong>
+                                <br />
+                                Dirección: {hotel.address}
+                                <br />
+                                Ciudad: {hotel.city}
+                                {hotel.type === 'hotel' ? (
+                                    <>
+                                        {hotel.phone && (
+                                            <>
+                                                <br />
+                                                Teléfono: {hotel.phone}
+                                            </>
+                                        )}
+                                        {hotel.employees != null && (
+                                            <>
+                                                <br />
+                                                Empleados: {hotel.employees}
+                                            </>
+                                        )}
+                                        {hotel.services && hotel.services.length > 0 && (
+                                            <>
+                                                <br />
+                                                Servicios: {hotel.services.join(', ')}
+                                            </>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        {hotel.price != null && (
+                                            <>
+                                                <br />
+                                                Precio: ${hotel.price}
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </Popup>
+                        </Marker>
+                    );
+                }
+                return null;
+            })}
             {tempLocation && (
                 <Marker position={tempLocation} icon={tempIcon}>
                     <Popup>Nueva ubicación</Popup>
