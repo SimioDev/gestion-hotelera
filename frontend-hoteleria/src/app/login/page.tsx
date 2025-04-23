@@ -29,7 +29,7 @@ export default function Login() {
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-gray-200 relative">
             <div className="absolute inset-0 z-0 opacity-60">
                 <Image
-                    src="/fondo.jpg"
+                    src="/fondoLogin.jpg"
                     alt="Fondo de login"
                     fill
                     style={{ objectFit: 'cover' }}
