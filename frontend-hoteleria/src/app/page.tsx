@@ -22,15 +22,14 @@ export default function Home() {
     useEffect(() => {
         const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         setToken(storedToken);
-    }, []);
+
+        if (!storedToken) {
+            router.push('/login');
+        }
+    }, [router]);
 
     useEffect(() => {
-        if (token === null) return;
-
-        if (!token) {
-            router.push('/login');
-            return;
-        }
+        if (token === null || !token) return;
 
         const fetchData = async () => {
             try {
@@ -85,7 +84,7 @@ export default function Home() {
             }
         };
         fetchData();
-    }, [token, router]);
+    }, [token]);
 
     const handleDeleteHotel = async (id: number) => {
         if (!token) return;
@@ -212,6 +211,10 @@ export default function Home() {
             });
         }
     };
+
+    if (token === null || !token) {
+        return null;
+    }
 
     return (
         <main className="flex min-h-screen">

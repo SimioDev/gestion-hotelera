@@ -22,25 +22,25 @@ interface SidebarProps {
 }
 
 export default function Sidebar({
-                                    view,
-                                    setView,
-                                    hotels,
-                                    user,
-                                    token,
-                                    onSelectHotel,
-                                    onDeleteHotel,
-                                    onUpdateChainName,
-                                    onCreateHotel,
-                                    onMapClick,
-                                    tempLocation,
-                                    setTempLocation,
-                                    setMapCenter,
-                                    onLogout,
-                                }: SidebarProps) {
+    view,
+    setView,
+    hotels,
+    user,
+    token,
+    onSelectHotel,
+    onDeleteHotel,
+    onUpdateChainName,
+    onCreateHotel,
+    onMapClick,
+    tempLocation,
+    setTempLocation,
+    setMapCenter,
+    onLogout,
+}: SidebarProps) {
     return (
         <div className="w-1/4 p-4 bg-gray-100 overflow-y-auto h-screen">
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold text-primary">Hotelería Fácil</h1>
+                <h1 className="text-2xl font-bold text-primary">EliteStay Manager</h1>
                 <button
                     onClick={onLogout}
                     className="text-primary hover:text-opacity-80 flex items-center"
@@ -74,7 +74,13 @@ export default function Sidebar({
             </div>
 
             {view === 'general' && (
-                <HotelList hotels={hotels} onSelectHotel={onSelectHotel} onDeleteHotel={onDeleteHotel} />
+                hotels.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-4">
+                        Actualmente no cuentas con ningún registro.
+                    </div>
+                ) : (
+                    <HotelList hotels={hotels} onSelectHotel={onSelectHotel} onDeleteHotel={onDeleteHotel} />
+                )
             )}
 
             {view === 'user' && (

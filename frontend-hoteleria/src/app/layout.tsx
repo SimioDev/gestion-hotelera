@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Hotelería Fácil - Sistema de gestión de cadenas de hoteles",
-  description: "Sistema de gestión diseñada para cadenas de hoteles",
+  title: "EliteStay Manager",
+  description: "Sistema de gestión diseñada",
 };
 
 export default function RootLayout({

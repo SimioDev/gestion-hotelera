@@ -303,18 +303,21 @@ export default function CreateForm({
                     onChange={(e) => setNewHotel({ ...newHotel, phone: e.target.value })}
                     className="w-full p-2 border rounded-md"
                 />
-            </div>
-            {newHotel.type === 'hotel' && (
-                <>
-                    <div className="mb-2">
-                        <input
-                            type="number"
-                            placeholder="Número de empleados"
-                            value={newHotel.employees}
-                            onChange={(e) => setNewHotel({ ...newHotel, employees: +e.target.value })}
-                            className="w-full p-2 border rounded-md"
-                            required
-                        />
+                    </div>
+                    {newHotel.type === 'hotel' && (
+                        <>
+                        <div className="mb-2">
+                            <label className="block text-gray-700 mb-1">
+                                Número de empleados:
+                            </label>
+                            <input
+                                type="number"
+                                placeholder="Número de empleados"
+                                value={newHotel.employees}
+                                onChange={(e) => setNewHotel({ ...newHotel, employees: +e.target.value })}
+                                className="w-full p-2 border rounded-md"
+                                required
+                            />
                     </div>
                     <div className="mb-2">
                         <input
