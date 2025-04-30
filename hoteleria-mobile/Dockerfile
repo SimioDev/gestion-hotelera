@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 19000 19001 19002 8081
 
-CMD ["npx", "expo", "start", "--tunnel"]
+CMD ["npx", "expo", "start", "--tunnel", "--port", "19000"]

@@ -13,13 +13,13 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://backend:3000/auth/login', {
+      const response = await axios.post('https://e46e-181-33-170-84.ngrok-free.app/auth/login', {
         email,
         password,
       });
       const token = response.data.access_token;
       await SecureStore.setItemAsync('token', token);
-      navigation.navigate('Main'); // Cambiado de 'Home' a 'Main' para que coincida con App.tsx
+      navigation.navigate('Main');
     } catch (err) {
       setError('Credenciales inválidas');
     }

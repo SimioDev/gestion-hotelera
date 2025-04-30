@@ -7,39 +7,80 @@ import { useNavigation } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { Hotel } from '../types/hotel';
+import * as Location from 'expo-location';
 
 export default function HomeScreen() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
   const [mapRegion, setMapRegion] = useState({
-    latitude: 4.7110,
+    latitude: 4.7110, // Bogotá por defecto
     longitude: -74.0721,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const navigation = useNavigation();
 
   useEffect(() => {
     fetchHotels();
+    getUserLocation();
   }, []);
 
   const fetchHotels = async () => {
     try {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get('http://backend:3000/hotels', {
+      const response = await axios.get('https://e46e-181-33-170-84.ngrok-free.app/hotels', {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log('Hoteles recibidos:', response.data); // Para depurar
       setHotels(response.data);
     } catch (error) {
+      console.log('Error al cargar hoteles:', error);
       Alert.alert('Error', 'No se pudieron cargar los hoteles');
+    }
+  };
+
+  const getUserLocation = async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso denegado', 'No se otorgaron permisos para acceder a la ubicación');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      const { latitude, longitude } = location.coords;
+      setUserLocation({ latitude, longitude });
+      setMapRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    } catch (error) {
+      console.log('Error al obtener la ubicación:', error);
+      Alert.alert('Error', 'No se pudo obtener la ubicación');
+    }
+  };
+
+  const centerOnUserLocation = () => {
+    if (userLocation) {
+      setMapRegion({
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    } else {
+      Alert.alert('Ubicación no disponible', 'No se ha podido obtener tu ubicación actual');
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
       const token = await SecureStore.getItemAsync('token');
-      await axios.delete(`http://backend:3000/hotels/${id}`, {
+      await axios.delete(`https://e46e-181-33-170-84.ngrok-free.app/hotels/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHotels(hotels.filter(hotel => hotel.id !== id));
@@ -55,84 +96,102 @@ export default function HomeScreen() {
   };
 
   const focusOnHotel = (hotel: Hotel) => {
-    setMapRegion({
-      latitude: hotel.location.coordinates[1],
-      longitude: hotel.location.coordinates[0],
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
+    if (hotel.location && hotel.location.coordinates) {
+      setMapRegion({
+        latitude: hotel.location.coordinates[1],
+        longitude: hotel.location.coordinates[0],
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Hotel Management</Text>
-        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-          <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
-        </TouchableOpacity>
-      </View>
-
-      <MapView style={styles.map} region={mapRegion}>
-        {hotels.map(hotel => (
-          <Marker
-            key={hotel.id}
-            coordinate={{
-              latitude: hotel.location.coordinates[1],
-              longitude: hotel.location.coordinates[0],
-            }}
-            title={hotel.name}
-            description={hotel.address}
-          />
-        ))}
-      </MapView>
-
-      <FlatList
-        data={hotels}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.hotelItem}>
-            <TouchableOpacity onPress={() => focusOnHotel(item)} style={styles.hotelInfo}>
-              <Text style={styles.hotelName}>{item.name}</Text>
-              <Text style={styles.hotelAddress}>{item.address}, {item.city}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedHotel(item);
-                setModalVisible(true);
-              }}
-              style={styles.deleteButton}
-            >
-              <Ionicons name="trash-outline" size={24} color="#EF4444" />
-            </TouchableOpacity>
-          </View>
-        )}
-        style={styles.list}
-      />
-
-      <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>¿Eliminar Hotel?</Text>
-          <Text style={styles.modalText}>
-            ¿Estás seguro de que deseas eliminar {selectedHotel?.name}?
-          </Text>
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              onPress={() => setModalVisible(false)}
-              style={styles.modalButton}
-            >
-              <Text style={styles.modalButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => selectedHotel && handleDelete(selectedHotel.id)}
-              style={[styles.modalButton, styles.modalButtonDelete]}
-            >
-              <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Eliminar</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Hotel Management</Text>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+            <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
-    </View>
+
+        <MapView style={styles.map} region={mapRegion}>
+          {hotels.map(hotel => (
+              hotel.location && hotel.location.coordinates ? (
+                  <Marker
+                      key={hotel.id}
+                      coordinate={{
+                        latitude: hotel.location.coordinates[1],
+                        longitude: hotel.location.coordinates[0],
+                      }}
+                      title={hotel.name}
+                      description={hotel.address}
+                  />
+              ) : null
+          ))}
+          {userLocation && (
+              <Marker
+                  coordinate={{
+                    latitude: userLocation.latitude,
+                    longitude: userLocation.longitude,
+                  }}
+                  title="Mi Ubicación"
+                  pinColor="blue"
+              />
+          )}
+        </MapView>
+
+        <TouchableOpacity onPress={centerOnUserLocation} style={styles.locationButton}>
+          <Ionicons name="locate-outline" size={24} color="#FFF" />
+        </TouchableOpacity>
+
+        <FlatList
+            data={hotels}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item }) => (
+                <View style={styles.hotelItem}>
+                  <TouchableOpacity onPress={() => focusOnHotel(item)} style={styles.hotelInfo}>
+                    <Text style={styles.hotelName}>{item.name}</Text>
+                    <Text style={styles.hotelAddress}>{item.address}, {item.city}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                      onPress={() => {
+                        setSelectedHotel(item);
+                        setModalVisible(true);
+                      }}
+                      style={styles.deleteButton}
+                  >
+                    <Ionicons name="trash-outline" size={24} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+            )}
+            style={styles.list}
+        />
+
+        <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>¿Eliminar Hotel?</Text>
+            <Text style={styles.modalText}>
+              ¿Estás seguro de que deseas eliminar {selectedHotel?.name}?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                  onPress={() => setModalVisible(false)}
+                  style={styles.modalButton}
+              >
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                  onPress={() => selectedHotel && handleDelete(selectedHotel.id)}
+                  style={[styles.modalButton, styles.modalButtonDelete]}
+              >
+                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Eliminar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
   );
 }
 
@@ -164,6 +223,15 @@ const styles = StyleSheet.create({
   },
   map: {
     height: '40%',
+  },
+  locationButton: {
+    position: 'absolute',
+    top: 80,
+    right: 16,
+    backgroundColor: '#2563EB',
+    borderRadius: 50,
+    padding: 10,
+    elevation: 5,
   },
   list: {
     flex: 1,

@@ -12,6 +12,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "permissions": {
+      "location": {
+        "ios": {
+          "info": "Necesitamos tu ubicación para mostrarte en el mapa"
+        },
+        "android": {
+          "info": "Necesitamos tu ubicación para mostrarte en el mapa"
+        }
+      }
+    },
     "ios": {
       "supportsTablet": true
     },
