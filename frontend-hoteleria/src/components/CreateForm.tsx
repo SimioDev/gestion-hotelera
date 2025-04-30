@@ -14,15 +14,15 @@ interface CreateFormProps {
 }
 
 export default function CreateForm({
-                                       token,
-                                       userChainName,
-                                       onCreate,
-                                       onSuccess,
-                                       onMapClick,
-                                       tempLocation,
-                                       setTempLocation,
-                                       setMapCenter,
-                                   }: CreateFormProps) {
+    token,
+    userChainName,
+    onCreate,
+    onSuccess,
+    onMapClick,
+    tempLocation,
+    setTempLocation,
+    setMapCenter,
+}: CreateFormProps) {
     const [newHotel, setNewHotel] = useState({
         type: '',
         name: '',
@@ -221,93 +221,94 @@ export default function CreateForm({
 
     return (
         <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold text-text mb-2">Crear Nueva Propiedad/Hotel</h2>
-            <p className="text-sm text-gray-500 mb-2">
+            <h2 className="text-lg font-semibold text-text mb-2 text-center">Crear Nueva Propiedad/Hotel</h2>
+            <p className="text-sm text-gray-500 mb-2 text-left">
                 Busca una dirección o haz clic en el mapa para seleccionar la ubicación
             </p>
             {tempLocation && (
-                <p className="text-sm text-gray-600 mb-2">
+                <p className="text-sm text-gray-600 mb-2 text-center">
                     Ubicación seleccionada: Lat {tempLocation[0].toFixed(4)}, Lon{' '}
                     {tempLocation[1].toFixed(4)}
                 </p>
             )}
-            <div className="mb-2">
-                <select
-                    value={newHotel.type}
-                    onChange={(e) => setNewHotel({ ...newHotel, type: e.target.value })}
-                    className="w-full p-2 border rounded-md"
-                    required
+            <div className="centered-content">
+                <div className="mb-2">
+                    <select
+                        value={newHotel.type}
+                        onChange={(e) => setNewHotel({ ...newHotel, type: e.target.value })}
+                        className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                        required
+                    >
+                        <option value="">Selecciona el tipo</option>
+                        <option value="hotel">Hotel</option>
+                        <option value="casa">Casa</option>
+                        <option value="apartamento">Apartamento</option>
+                        <option value="terreno">Terreno</option>
+                    </select>
+                </div>
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Nombre"
+                        value={newHotel.name}
+                        onChange={(e) => setNewHotel({ ...newHotel, name: e.target.value })}
+                        className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                        required
+                    />
+                </div>
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Ciudad (ej. Bogotá)"
+                        value={newHotel.city}
+                        onChange={(e) => setNewHotel({ ...newHotel, city: e.target.value })}
+                        className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                        required
+                    />
+                </div>
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Dirección específica (ej. Calle 123 #45-67)"
+                        value={newHotel.address}
+                        onChange={(e) => setNewHotel({ ...newHotel, address: e.target.value })}
+                        className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                        required
+                    />
+                </div>
+                <button
+                    type="button"
+                    onClick={handleSearchAddress}
+                    className="w-full max-w-xs p-2 bg-gray-500 text-white rounded-md mb-2 mx-auto block"
                 >
-                    <option value="">Selecciona el tipo</option>
-                    <option value="hotel">Hotel</option>
-                    <option value="casa">Casa</option>
-                    <option value="apartamento">Apartamento</option>
-                    <option value="terreno">Terreno</option>
-                </select>
-            </div>
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Nombre"
-                    value={newHotel.name}
-                    onChange={(e) => setNewHotel({ ...newHotel, name: e.target.value })}
-                    className="w-full p-2 border rounded-md"
-                    required
-                />
-            </div>
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Ciudad (ej. Bogotá)"
-                    value={newHotel.city}
-                    onChange={(e) => setNewHotel({ ...newHotel, city: e.target.value })}
-                    className="w-full p-2 border rounded-md"
-                    required
-                />
-            </div>
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Dirección específica (ej. Calle 123 #45-67)"
-                    value={newHotel.address}
-                    onChange={(e) => setNewHotel({ ...newHotel, address: e.target.value })}
-                    className="w-full p-2 border rounded-md"
-                    required
-                />
-            </div>
-            <button
-                type="button"
-                onClick={handleSearchAddress}
-                className="w-full p-2 bg-gray-500 text-white rounded-md mb-2"
-            >
-                Buscar dirección
-            </button>
-            {addressSuggestions.length > 0 && (
-                <ul className="mb-2 border rounded max-h-40 overflow-y-auto">
-                    {addressSuggestions.map((suggestion, index) => (
-                        <li
-                            key={index}
-                            onClick={() => handleSelectAddress(suggestion)}
-                            className="p-2 hover:bg-gray-200 cursor-pointer"
-                        >
-                            {suggestion.display_name}
-                        </li>
-                    ))}
-                </ul>
-            )}
-            <div className="mb-2">
-                <input
-                    type="text"
-                    placeholder="Teléfono"
-                    value={newHotel.phone}
-                    onChange={(e) => setNewHotel({ ...newHotel, phone: e.target.value })}
-                    className="w-full p-2 border rounded-md"
-                />
-                    </div>
-                    {newHotel.type === 'hotel' && (
-                        <>
+                    Buscar dirección
+                </button>
+                {addressSuggestions.length > 0 && (
+                    <ul className="mb-2 border rounded max-h-40 overflow-y-auto w-full max-w-xs mx-auto">
+                        {addressSuggestions.map((suggestion, index) => (
+                            <li
+                                key={index}
+                                onClick={() => handleSelectAddress(suggestion)}
+                                className="p-2 hover:bg-gray-200 cursor-pointer text-center"
+                            >
+                                {suggestion.display_name}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Teléfono"
+                        value={newHotel.phone}
+                        onChange={(e) => setNewHotel({ ...newHotel, phone: e.target.value })}
+                        className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                    />
+                </div>
+                {newHotel.type === 'hotel' && (
+                    <>
                         <div className="mb-2">
-                            <label className="block text-gray-700 mb-1">
+                            <label className="block text-gray-700 mb-1 text-center">
                                 Número de empleados:
                             </label>
                             <input
@@ -315,78 +316,79 @@ export default function CreateForm({
                                 placeholder="Número de empleados"
                                 value={newHotel.employees}
                                 onChange={(e) => setNewHotel({ ...newHotel, employees: +e.target.value })}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full max-w-xs p-2 border rounded-md mx-auto block"
                                 required
                             />
-                    </div>
+                        </div>
+                        <div className="mb-2">
+                            <input
+                                type="text"
+                                placeholder="URL del logo"
+                                value={newHotel.logoUrl}
+                                onChange={(e) => setNewHotel({ ...newHotel, logoUrl: e.target.value })}
+                                className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                                required
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <input
+                                type="text"
+                                placeholder="Nombre del gerente"
+                                value={newHotel.managerName}
+                                onChange={(e) => setNewHotel({ ...newHotel, managerName: e.target.value })}
+                                className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                            />
+                        </div>
+                        <div className="mb-2">
+                            <input
+                                type="email"
+                                placeholder="Email del gerente"
+                                value={newHotel.managerEmail}
+                                onChange={(e) => setNewHotel({ ...newHotel, managerEmail: e.target.value })}
+                                className="w-full max-w-xs p-2 border rounded-md mx-auto block"
+                            />
+                        </div>
+                    </>
+                )}
+                {newHotel.type !== 'hotel' && newHotel.type && (
                     <div className="mb-2">
                         <input
-                            type="text"
-                            placeholder="URL del logo"
-                            value={newHotel.logoUrl}
-                            onChange={(e) => setNewHotel({ ...newHotel, logoUrl: e.target.value })}
-                            className="w-full p-2 border rounded-md"
+                            type="number"
+                            placeholder="Precio"
+                            value={newHotel.price}
+                            onChange={(e) => setNewHotel({ ...newHotel, price: +e.target.value })}
+                            className="w-full max-w-xs p-2 border rounded-md mx-auto block"
                             required
                         />
                     </div>
-                    <div className="mb-2">
-                        <input
-                            type="text"
-                            placeholder="Nombre del gerente"
-                            value={newHotel.managerName}
-                            onChange={(e) => setNewHotel({ ...newHotel, managerName: e.target.value })}
-                            className="w-full p-2 border rounded-md"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <input
-                            type="email"
-                            placeholder="Email del gerente"
-                            value={newHotel.managerEmail}
-                            onChange={(e) => setNewHotel({ ...newHotel, managerEmail: e.target.value })}
-                            className="w-full p-2 border rounded-md"
-                        />
-                    </div>
-                </>
-            )}
-            {newHotel.type !== 'hotel' && newHotel.type && (
+                )}
                 <div className="mb-2">
-                    <input
-                        type="number"
-                        placeholder="Precio"
-                        value={newHotel.price}
-                        onChange={(e) => setNewHotel({ ...newHotel, price: +e.target.value })}
-                        className="w-full p-2 border rounded-md"
-                        required
-                    />
+                    <label className="text-sm text-gray-600 block text-center">Servicios:</label>
+                    <div className="flex flex-wrap gap-2 mb-2 justify-center">
+                        {newHotel.services.map((service, index) => (
+                            <div key={index} className="flex items-center bg-gray-200 px-2 py-1 rounded">
+                                <span>{service}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveService(service)}
+                                    className="ml-2 text-red-500"
+                                >
+                                    x
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleAddService}
+                        className="w-full max-w-xs p-2 bg-gray-500 text-white rounded-md mx-auto block"
+                    >
+                        Agregar servicio
+                    </button>
                 </div>
-            )}
-            <div className="mb-2">
-                <label className="text-sm text-gray-600">Servicios:</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                    {newHotel.services.map((service, index) => (
-                        <div key={index} className="flex items-center bg-gray-200 px-2 py-1 rounded">
-                            <span>{service}</span>
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveService(service)}
-                                className="ml-2 text-red-500"
-                            >
-                                x
-                            </button>
-                        </div>
-                    ))}
-                </div>
-                <button
-                    type="button"
-                    onClick={handleAddService}
-                    className="w-full p-2 bg-gray-500 text-white rounded-md"
-                >
-                    Agregar servicio
-                </button>
             </div>
             <div className="mb-2">
-                <label className="text-sm text-gray-600">Subir imágenes (máximo 5):</label>
+                <label className="text-sm text-gray-600 text-left block">Subir imágenes (máximo 5):</label>
                 <input
                     type="file"
                     multiple
@@ -395,14 +397,14 @@ export default function CreateForm({
                     className="w-full p-2 border rounded-md"
                 />
                 {selectedFiles.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1 text-center">
                         {selectedFiles.length} archivo(s) seleccionado(s)
                     </p>
                 )}
             </div>
             <button
                 type="submit"
-                className="w-full bg-primary text-secondary py-2 rounded-md hover:bg-opacity-90"
+                className="w-full max-w-xs bg-primary text-secondary py-2 rounded-md hover:bg-opacity-90 mx-auto block"
             >
                 Crear {newHotel.type === 'hotel' ? 'Hotel' : 'Propiedad'}
             </button>
