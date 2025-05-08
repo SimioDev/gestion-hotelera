@@ -101,7 +101,7 @@ export default function CreateHotelScreen() {
         images: form.images ? form.images.split(',').map(i => i.trim()) : undefined,
       };
 
-      await axios.post('https://e46e-181-33-170-84.ngrok-free.app/hotels', hotelData, {
+      await axios.post('https://28c8-181-33-164-13.ngrok-free.app/hotels', hotelData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       Alert.alert('Éxito', 'Hotel creado exitosamente');

@@ -221,7 +221,7 @@ export default function CreateForm({
 
     return (
         <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-md">
-            <h2 className="text-lg font-semibold text-text mb-2 text-center">Crear Nueva Propiedad/Hotel</h2>
+            <h2 className="text-lg font-semibold text-text mb-2 text-center">Crear Nueva</h2>
             <p className="text-sm text-gray-500 mb-2 text-left">
                 Busca una dirección o haz clic en el mapa para seleccionar la ubicación
             </p>

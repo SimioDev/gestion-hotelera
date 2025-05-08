@@ -13,7 +13,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://e46e-181-33-170-84.ngrok-free.app/auth/login', {
+      const response = await axios.post('https://28c8-181-33-164-13.ngrok-free.app/auth/login', {
         email,
         password,
       });

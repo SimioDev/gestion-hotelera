@@ -30,7 +30,7 @@ export default function HomeScreen() {
   const fetchHotels = async () => {
     try {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get('https://e46e-181-33-170-84.ngrok-free.app/hotels', {
+      const response = await axios.get('https://28c8-181-33-164-13.ngrok-free.app/hotels', {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Hoteles recibidos:', response.data); // Para depurar
@@ -80,7 +80,7 @@ export default function HomeScreen() {
   const handleDelete = async (id: number) => {
     try {
       const token = await SecureStore.getItemAsync('token');
-      await axios.delete(`https://e46e-181-33-170-84.ngrok-free.app/hotels/${id}`, {
+      await axios.delete(`https://28c8-181-33-164-13.ngrok-free.app/hotels/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHotels(hotels.filter(hotel => hotel.id !== id));
