@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Modal from 'react-native-modal';
 import { Ionicons } from '@expo/vector-icons';
 import { Hotel } from '../types/hotel';
@@ -13,8 +13,9 @@ export default function HomeScreen() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
   const [isModalVisible, setModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [mapRegion, setMapRegion] = useState({
-    latitude: 4.7110, // Bogotá por defecto
+    latitude: 4.7110,
     longitude: -74.0721,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
@@ -23,21 +24,33 @@ export default function HomeScreen() {
   const navigation = useNavigation();
 
   useEffect(() => {
-    fetchHotels();
     getUserLocation();
   }, []);
 
+  useFocusEffect(
+      useCallback(() => {
+        console.log('HomeScreen en foco - cargando hoteles');
+        fetchHotels();
+        return () => {
+        };
+      }, [])
+  );
+
+
   const fetchHotels = async () => {
+    setRefreshing(true);
     try {
       const token = await SecureStore.getItemAsync('token');
-      const response = await axios.get('https://28c8-181-33-164-13.ngrok-free.app/hotels', {
+      const response = await axios.get('https://5acd-181-33-166-204.ngrok-free.app/hotels', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Hoteles recibidos:', response.data); // Para depurar
+      console.log('Hoteles recibidos:', response.data);
       setHotels(response.data);
     } catch (error) {
       console.log('Error al cargar hoteles:', error);
       Alert.alert('Error', 'No se pudieron cargar los hoteles');
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -49,7 +62,9 @@ export default function HomeScreen() {
         return;
       }
 
-      let location = await Location.getCurrentPositionAsync({});
+      let location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      });
       const { latitude, longitude } = location.coords;
       setUserLocation({ latitude, longitude });
       setMapRegion({
@@ -80,13 +95,13 @@ export default function HomeScreen() {
   const handleDelete = async (id: number) => {
     try {
       const token = await SecureStore.getItemAsync('token');
-      await axios.delete(`https://28c8-181-33-164-13.ngrok-free.app/hotels/${id}`, {
+      await axios.delete(`https://5acd-181-33-166-204.ngrok-free.app/hotels/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setHotels(hotels.filter(hotel => hotel.id !== id));
       setModalVisible(false);
     } catch (error) {
-      Alert.alert('Error', 'No se pudo eliminar el hotel');
+      Alert.alert('Error', 'No se pudo eliminar el inmueble');
     }
   };
 
@@ -109,11 +124,7 @@ export default function HomeScreen() {
   return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Hotel Management</Text>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-            <Text style={styles.logoutText}>Cerrar Sesión</Text>
-          </TouchableOpacity>
+          <Text style={styles.title}>EliteStay Manager</Text>
         </View>
 
         <MapView style={styles.map} region={mapRegion}>
@@ -146,6 +157,10 @@ export default function HomeScreen() {
           <Ionicons name="locate-outline" size={24} color="#FFF" />
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={fetchHotels} style={styles.refreshButton}>
+          <Ionicons name="refresh-outline" size={24} color="#FFF" />
+        </TouchableOpacity>
+
         <FlatList
             data={hotels}
             keyExtractor={item => item.id.toString()}
@@ -167,6 +182,14 @@ export default function HomeScreen() {
                 </View>
             )}
             style={styles.list}
+            refreshControl={
+              <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={fetchHotels}
+                  colors={["#2563EB"]}
+                  tintColor="#2563EB"
+              />
+            }
         />
 
         <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
@@ -199,6 +222,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6',
+  },
+  refreshButton: {
+    position: 'absolute',
+    top: 80,
+    right: 70,
+    backgroundColor: '#2563EB',
+    borderRadius: 50,
+    padding: 10,
+    elevation: 5,
   },
   header: {
     flexDirection: 'row',

@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, Alert, FlatList, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import { Picker } from '@react-native-picker/picker';
-import Modal from 'react-native-modal';
 
-export default function CreateHotelScreen() {
+// Componentes de formulario
+import BasicInfoForm from '../components/forms/BasicInfoForm';
+import LocationForm from '../components/forms/LocationForm';
+import HotelSpecificForm from '../components/forms/HotelSpecificForm';
+import PropertySpecificForm from '../components/forms/PropertySpecificForm';
+import ServicesForm from '../components/forms/ServicesForm';
+import FormButton from '../components/shared/FormButton';
+
+const CreateHotelScreen = () => {
   const [form, setForm] = useState({
     type: '',
     name: '',
@@ -22,66 +28,81 @@ export default function CreateHotelScreen() {
     price: '',
     images: '',
   });
-  const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
-  const [isModalVisible, setModalVisible] = useState(false);
+
+  const [formUpdated, setFormUpdated] = useState(0);
+  const [mapLocation, setMapLocation] = useState(null);
 
   const handleChange = (name: string, value: string) => {
-    setForm({ ...form, [name]: value });
+    console.log(`Actualizando ${name} = ${value}`);
+    setForm(prevForm => {
+      const newForm = { ...prevForm, [name]: value };
+      return newForm;
+    });
+    setFormUpdated(prev => prev + 1);
   };
 
-  const handleSearchAddress = async () => {
-    if (!form.address || !form.city) {
-      Alert.alert('Campos requeridos', 'Por favor, ingresa la ciudad y la dirección específica para buscar');
+  useEffect(() => {
+    console.log('Form state actualizado:', form);
+  }, [form, formUpdated]);
+
+  const handleLocationChange = (lat: number, lon: number) => {
+    console.log(`Ubicación actualizada en componente principal: Lat: ${lat}, Lon: ${lon}`);
+    setMapLocation([lat, lon]);
+  };
+
+  const validateRequiredFields = () => {
+    const requiredFields = [
+      { name: 'type', label: 'tipo' },
+      { name: 'name', label: 'nombre' },
+      { name: 'city', label: 'ciudad' },
+      { name: 'address', label: 'dirección' },
+      { name: 'latitude', label: 'latitud' },
+      { name: 'longitude', label: 'longitud' },
+    ];
+
+    if (form.type === 'hotel') {
+      requiredFields.push(
+          { name: 'employees', label: 'número de empleados' },
+          { name: 'logoUrl', label: 'URL del logo' }
+      );
+    } else if (form.type) {
+      requiredFields.push({ name: 'price', label: 'precio' });
+    }
+
+    requiredFields.forEach(field => {
+      console.log(`${field.name}: "${form[field.name]}"`);
+    });
+
+    const missingFields = requiredFields.filter(field => !form[field.name]);
+
+    if (missingFields.length > 0) {
+      const fieldLabels = missingFields.map(field => field.label);
+      Alert.alert(
+          'Campos requeridos',
+          `Por favor, complete los siguientes campos: ${fieldLabels.join(', ')}.`
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateRequiredFields()) {
       return;
     }
 
     try {
-      const query = `${form.address}, ${form.city}, Colombia`;
-      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: query,
-          format: 'json',
-          addressdetails: 1,
-          limit: 5,
-          countrycodes: 'CO',
-        },
-        headers: {
-          'User-Agent': 'GestionInmobiliariaApp/1.0 (tu-email@example.com)',
-        },
-      });
-
-      const suggestions = response.data.map((item: any) => ({
-        display_name: item.display_name,
-        lat: parseFloat(item.lat),
-        lon: parseFloat(item.lon),
-      }));
-      setAddressSuggestions(suggestions);
-
-      if (suggestions.length > 0) {
-        setModalVisible(true);
-      } else {
-        Alert.alert('Sin resultados', 'No se encontraron direcciones en Colombia. Intenta con otra búsqueda.');
-      }
-    } catch (error) {
-      console.error('Error searching address:', error);
-      Alert.alert('Error', 'No se pudo buscar la dirección. Intenta de nuevo.');
-    }
-  };
-
-  const handleSelectAddress = (suggestion: any) => {
-    setForm({
-      ...form,
-      address: suggestion.display_name,
-      latitude: suggestion.lat.toString(),
-      longitude: suggestion.lon.toString(),
-    });
-    setModalVisible(false);
-    setAddressSuggestions([]);
-  };
-
-  const handleSubmit = async () => {
-    try {
       const token = await SecureStore.getItemAsync('token');
+
+      const latitude = parseFloat(form.latitude);
+      const longitude = parseFloat(form.longitude);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        Alert.alert('Error', 'Las coordenadas de latitud y longitud deben ser números válidos');
+        return;
+      }
+
       const hotelData = {
         type: form.type,
         name: form.name,
@@ -89,7 +110,7 @@ export default function CreateHotelScreen() {
         city: form.city,
         location: {
           type: 'Point',
-          coordinates: [parseFloat(form.longitude), parseFloat(form.latitude)],
+          coordinates: [longitude, latitude],
         },
         phone: form.phone || undefined,
         employees: form.employees ? parseInt(form.employees) : undefined,
@@ -101,10 +122,12 @@ export default function CreateHotelScreen() {
         images: form.images ? form.images.split(',').map(i => i.trim()) : undefined,
       };
 
-      await axios.post('https://28c8-181-33-164-13.ngrok-free.app/hotels', hotelData, {
+      const response = await axios.post('https://5acd-181-33-166-204.ngrok-free.app/hotels', hotelData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      Alert.alert('Éxito', 'Hotel creado exitosamente');
+
+
+      Alert.alert('Éxito', 'Inmueble creado exitosamente');
       setForm({
         type: '',
         name: '',
@@ -121,180 +144,45 @@ export default function CreateHotelScreen() {
         price: '',
         images: '',
       });
+      setMapLocation(null);
     } catch (error) {
-      Alert.alert('Error', 'No se pudo crear el hotel');
+      console.error('Error al crear inmueble:', error);
+      console.error('Detalles del error:', error.response ? JSON.stringify(error.response.data) : 'Sin respuesta del servidor');
+      Alert.alert('Error', error.response?.data?.message || 'No se pudo crear el inmueble');
     }
   };
 
   return (
       <ScrollView style={styles.container}>
-        <Text style={styles.title}>Crear Hotel</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Tipo</Text>
-          <Picker
-              selectedValue={form.type}
-              onValueChange={(value) => handleChange('type', value)}
-              style={styles.picker}
-          >
-            <Picker.Item label="Selecciona el tipo" value="" />
-            <Picker.Item label="Hotel" value="hotel" />
-            <Picker.Item label="Casa" value="casa" />
-            <Picker.Item label="Apartamento" value="apartamento" />
-            <Picker.Item label="Terreno" value="terreno" />
-          </Picker>
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Nombre</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Nombre del hotel"
-              value={form.name}
-              onChangeText={text => handleChange('name', text)}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Ciudad (ej. Bogotá)</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Ciudad"
-              value={form.city}
-              onChangeText={text => handleChange('city', text)}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Dirección específica (ej. Calle 123 #45-67)</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Dirección"
-              value={form.address}
-              onChangeText={text => handleChange('address', text)}
-          />
-        </View>
-        <Button title="Buscar dirección" onPress={handleSearchAddress} color="#6B7280" />
-        <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Sugerencias de Dirección</Text>
-            <FlatList
-                data={addressSuggestions}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                    <TouchableOpacity
-                        onPress={() => handleSelectAddress(item)}
-                        style={styles.suggestionItem}
-                    >
-                      <Text>{item.display_name}</Text>
-                    </TouchableOpacity>
-                )}
-                style={styles.suggestionList}
-            />
-            <Button title="Cancelar" onPress={() => setModalVisible(false)} color="#EF4444" />
-          </View>
-        </Modal>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Latitud</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Latitud (ej: 4.7110)"
-              value={form.latitude}
-              onChangeText={text => handleChange('latitude', text)}
-              keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Longitud</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Longitud (ej: -74.0721)"
-              value={form.longitude}
-              onChangeText={text => handleChange('longitude', text)}
-              keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Teléfono (opcional)</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Teléfono"
-              value={form.phone}
-              onChangeText={text => handleChange('phone', text)}
-          />
-        </View>
+        <BasicInfoForm form={form} onChange={handleChange} />
+
+        <LocationForm
+            form={form}
+            onChange={handleChange}
+            onLocationChange={handleLocationChange}
+        />
+
         {form.type === 'hotel' && (
-            <>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Número de Empleados (opcional)</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Número de empleados"
-                    value={form.employees}
-                    onChangeText={text => handleChange('employees', text)}
-                    keyboardType="numeric"
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>URL del Logo (opcional)</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="URL del logo"
-                    value={form.logoUrl}
-                    onChangeText={text => handleChange('logoUrl', text)}
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Nombre del Gerente (opcional)</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Nombre del gerente"
-                    value={form.managerName}
-                    onChangeText={text => handleChange('managerName', text)}
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <Text style={styles.label}>Email del Gerente (opcional)</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Email del gerente"
-                    value={form.managerEmail}
-                    onChangeText={text => handleChange('managerEmail', text)}
-                    keyboardType="email-address"
-                />
-              </View>
-            </>
+            <HotelSpecificForm form={form} onChange={handleChange} />
         )}
+
         {form.type !== 'hotel' && form.type && (
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Precio (opcional)</Text>
-              <TextInput
-                  style={styles.input}
-                  placeholder="Precio por noche"
-                  value={form.price}
-                  onChangeText={text => handleChange('price', text)}
-                  keyboardType="numeric"
-              />
-            </View>
+            <PropertySpecificForm form={form} onChange={handleChange} />
         )}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Servicios (opcional, separados por comas)</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Ej: wifi, piscina"
-              value={form.services}
-              onChangeText={text => handleChange('services', text)}
+
+        <ServicesForm form={form} onChange={handleChange} />
+
+        <View style={styles.submitButtonContainer}>
+          <FormButton
+              title={`Crear ${form.type === 'hotel' ? 'Hotel' : 'Inmueble'}`}
+              onPress={handleSubmit}
+              type="primary"
+              icon="add-circle"
           />
         </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Imágenes (opcional, URLs separadas por comas)</Text>
-          <TextInput
-              style={styles.input}
-              placeholder="URLs de imágenes"
-              value={form.images}
-              onChangeText={text => handleChange('images', text)}
-          />
-        </View>
-        <Button title="Crear Hotel" onPress={handleSubmit} color="#2563EB" />
       </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -302,54 +190,21 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#F3F4F6',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    textAlign: 'center',
-    color: '#2563EB',
+  submitButtonContainer: {
+    marginVertical: 20,
   },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#4B5563',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    padding: 12,
-    borderRadius: 6,
-    fontSize: 16,
-    backgroundColor: '#F9FAFB',
-  },
-  picker: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 6,
-    backgroundColor: '#F9FAFB',
-  },
-  modalContent: {
-    backgroundColor: '#FFF',
-    padding: 20,
-    borderRadius: 10,
-    maxHeight: '50%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#1F2937',
-  },
-  suggestionList: {
-    maxHeight: 200,
-  },
-  suggestionItem: {
+  locationInfo: {
+    backgroundColor: '#E5E7EB',
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#D1D5DB',
+    borderRadius: 6,
+    marginVertical: 10,
+  },
+  locationText: {
+    textAlign: 'center',
+    color: '#4B5563',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
+
+export default CreateHotelScreen;
