@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -39,6 +39,53 @@ export default function CreateForm({
     });
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [addressSuggestions, setAddressSuggestions] = useState<any[]>([]);
+
+    const fetchAddressFromCoordinates = async (lat: number, lon: number) => {
+        try {
+            const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+                params: {
+                    lat,
+                    lon,
+                    format: 'json',
+                    addressdetails: 1,
+                    countrycodes: 'CO',
+                },
+                headers: {
+                    'User-Agent': 'GestionInmobiliariaApp/1.0 (tu-email@example.com)',
+                },
+            });
+
+            const addressData = response.data;
+            if (addressData && addressData.display_name) {
+                setNewHotel((prev) => ({
+                    ...prev,
+                    address: addressData.display_name,
+                    city: addressData.address.city || addressData.address.town || addressData.address.village || '',
+                    location: { type: 'Point', coordinates: [lon, lat] },
+                }));
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin dirección',
+                    text: 'No se encontró una dirección para estas coordenadas. Por favor, ajusta la ubicación o ingresa la dirección manualmente.',
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching address from coordinates:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo obtener la dirección para estas coordenadas. Intenta de nuevo o ingresa la dirección manualmente.',
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (tempLocation) {
+            const [lat, lon] = tempLocation;
+            fetchAddressFromCoordinates(lat, lon);
+        }
+    }, [tempLocation]);
 
     const handleSearchAddress = async () => {
         if (!newHotel.address || !newHotel.city) {
@@ -153,6 +200,14 @@ export default function CreateForm({
             return;
         }
 
+        const typeMap = {
+            hotel: { success: 'Hotel', error: 'el hotel' },
+            casa: { success: 'Casa', error: 'la casa' },
+            apartamento: { success: 'Apartamento', error: 'el apartamento' },
+            terreno: { success: 'Terreno', error: 'el terreno' },
+        };
+        const typeName = typeMap[newHotel.type] || { success: 'Propiedad', error: 'la propiedad' };
+
         try {
             const formData = new FormData();
             formData.append('type', newHotel.type);
@@ -206,15 +261,17 @@ export default function CreateForm({
             Swal.fire({
                 icon: 'success',
                 title: 'Éxito',
-                text: `${newHotel.type === 'hotel' ? 'Hotel' : 'Propiedad'} creada exitosamente`,
+                text: `${typeName.success} creada exitosamente`,
             });
-            onSuccess();
+            if (typeof onSuccess === 'function') {
+                onSuccess();
+            }
         } catch (error) {
             console.error('Error creating property:', error.response?.data || error.message);
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.message || `Error al crear ${newHotel.type === 'hotel' ? 'el hotel' : 'la propiedad'}`,
+                text: error.response?.data?.message || `Error al crear ${typeName.error}`,
             });
         }
     };
@@ -352,6 +409,9 @@ export default function CreateForm({
                 )}
                 {newHotel.type !== 'hotel' && newHotel.type && (
                     <div className="mb-2">
+                        <label className="block text-gray-700 mb-1 text-center">
+                            Precio:
+                        </label>
                         <input
                             type="number"
                             placeholder="Precio"
@@ -406,7 +466,14 @@ export default function CreateForm({
                 type="submit"
                 className="w-full max-w-xs bg-primary text-secondary py-2 rounded-md hover:bg-opacity-90 mx-auto block"
             >
-                Crear {newHotel.type === 'hotel' ? 'Hotel' : 'Propiedad'}
+                Crear{newHotel.type
+                    ? ' ' + {
+                        hotel: 'Hotel',
+                        casa: 'Casa',
+                        apartamento: 'Apartamento',
+                        terreno: 'Terreno',
+                    }[newHotel.type]
+                    : ''}
             </button>
         </form>
     );
