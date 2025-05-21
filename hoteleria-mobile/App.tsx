@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './src/screens/HomeScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import CreateHotelScreen from './src/screens/CreateHotelScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
@@ -36,10 +37,12 @@ function LogoutButton({ navigation }) {
     return (
         <TouchableOpacity
             onPress={handleLogout}
-            style={styles.logoutButton}
+            style={styles.tabBarLogoutButton}
         >
-            <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
-            <Text style={styles.logoutText}>Salir</Text>
+            <View style={styles.tabBarButtonContent}>
+                <Ionicons name="log-out-outline" size={24} color="#EF4444" />
+                <Text style={styles.logoutButtonText}>Salir</Text>
+            </View>
         </TouchableOpacity>
     );
 }
@@ -54,6 +57,8 @@ function MainTabs({ navigation }) {
                         iconName = 'home';
                     } else if (route.name === 'Create') {
                         iconName = 'add-circle';
+                    } else if (route.name === 'Profile') {
+                        iconName = 'person';
                     } else if (route.name === 'Logout') {
                         iconName = 'log-out-outline';
                     }
@@ -63,8 +68,21 @@ function MainTabs({ navigation }) {
                 tabBarInactiveTintColor: '#9CA3AF',
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inmuebles' }} />
-            <Tab.Screen name="Create" component={CreateHotelScreen} options={{ title: 'Crear Inmueble' }} />
+            <Tab.Screen
+                name="Home"
+                component={HomeScreen}
+                options={{ title: 'Inmuebles' }}
+            />
+            <Tab.Screen
+                name="Create"
+                component={CreateHotelScreen}
+                options={{ title: 'Crear Inmueble' }}
+            />
+            <Tab.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{ title: 'Mi Perfil' }}
+            />
             <Tab.Screen
                 name="Logout"
                 component={() => null}
@@ -73,34 +91,7 @@ function MainTabs({ navigation }) {
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="log-out-outline" size={size} color="#EF4444" />
                     ),
-                    tabBarButton: (props) => (
-                        <TouchableOpacity
-                            {...props}
-                            style={styles.tabBarLogoutButton}
-                            onPress={() => {
-                                Alert.alert(
-                                    "Cerrar sesión",
-                                    "¿Estás seguro de que deseas salir?",
-                                    [
-                                        { text: "Cancelar", style: "cancel" },
-                                        {
-                                            text: "Salir",
-                                            onPress: async () => {
-                                                await SecureStore.deleteItemAsync('token');
-                                                navigation.navigate('Login');
-                                            },
-                                            style: "destructive"
-                                        }
-                                    ]
-                                );
-                            }}
-                        >
-                            <View style={styles.tabBarButtonContent}>
-                                <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-                                <Text style={styles.logoutButtonText}>Salir</Text>
-                            </View>
-                        </TouchableOpacity>
-                    )
+                    tabBarButton: (props) => <LogoutButton navigation={navigation} />
                 }}
             />
         </Tab.Navigator>
@@ -119,19 +110,6 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-    logoutButton: {
-        backgroundColor: '#EF4444',
-        padding: 12,
-        borderRadius: 6,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    logoutText: {
-        color: '#FFFFFF',
-        marginLeft: 8,
-        fontWeight: '500',
-    },
     tabBarLogoutButton: {
         flex: 1,
         justifyContent: 'center',

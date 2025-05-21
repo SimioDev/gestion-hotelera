@@ -8,6 +8,7 @@ interface FormInputProps {
     placeholder: string;
     required?: boolean;
     keyboardType?: 'default' | 'number-pad' | 'decimal-pad' | 'numeric' | 'email-address' | 'phone-pad';
+    editable?: boolean;
 }
 
 const FormInput = ({
@@ -16,21 +17,15 @@ const FormInput = ({
                        onChangeText,
                        placeholder,
                        required = false,
-                       keyboardType = 'default'
+                       keyboardType = 'default',
+                       editable = true
                    }: FormInputProps) => {
-    // Referencia al input para poder actualizarlo programáticamente si es necesario
     const inputRef = useRef<TextInput>(null);
-
-    // Verificamos si el valor cambia externamente
     useEffect(() => {
         if (inputRef.current) {
-            // Si el valor cambia externamente, nos aseguramos que el input lo refleje
             inputRef.current.setNativeProps({ text: value || '' });
         }
     }, [value]);
-
-    // Añadimos un log para verificar qué valores están llegando al componente
-    console.log(`Renderizando FormInput - "${label}": "${value}"`);
 
     return (
         <View style={styles.inputContainer}>
@@ -39,12 +34,15 @@ const FormInput = ({
             </Text>
             <TextInput
                 ref={inputRef}
-                style={styles.input}
+                style={[
+                    styles.input,
+                    !editable && styles.disabledInput
+                ]}
                 placeholder={placeholder}
                 value={value}
                 onChangeText={onChangeText}
                 keyboardType={keyboardType}
-                defaultValue={value || ''}
+                editable={editable}
             />
         </View>
     );
@@ -75,6 +73,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         backgroundColor: '#F9FAFB',
     },
+    disabledInput: {
+        backgroundColor: '#E5E7EB',
+        color: '#6B7280',
+    }
 });
 
 export default FormInput;

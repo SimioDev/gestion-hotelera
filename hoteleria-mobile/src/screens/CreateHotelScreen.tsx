@@ -122,7 +122,7 @@ const CreateHotelScreen = () => {
         images: form.images ? form.images.split(',').map(i => i.trim()) : undefined,
       };
 
-      const response = await axios.post('https://5acd-181-33-166-204.ngrok-free.app/hotels', hotelData, {
+      const response = await axios.post('https://77a8-190-60-32-86.ngrok-free.app/hotels', hotelData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
