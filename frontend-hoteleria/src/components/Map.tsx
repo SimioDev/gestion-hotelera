@@ -52,7 +52,7 @@ export default function Map({ hotels, center, onMapClick, tempLocation }: MapPro
         <MapContainer center={center} zoom={6} style={{ height: '100vh', width: '100%' }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="Desarrollado por: Nestor Cabrera"
+                attribution="Desarrollado por: Nestor Cabrera, Santiago Martinez"
             />
             <MapUpdater center={center} onMapClick={onMapClick} />
             {hotels.map((hotel) => {

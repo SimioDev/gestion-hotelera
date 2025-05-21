@@ -3,6 +3,8 @@ import HotelList from './HotelList';
 import UserInfo from './UserInfo';
 import CreateForm from './CreateForm';
 import { Hotel } from '@/types/hotel';
+import { useState } from 'react';
+import PropertyDetailsPanel from './PropertyDetailsPanel';
 
 interface SidebarProps {
     view: 'general' | 'user' | 'create';
@@ -37,6 +39,19 @@ export default function Sidebar({
     setMapCenter,
     onLogout,
 }: SidebarProps) {
+    const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+
+    const handleShowDetails = (hotel: Hotel) => {
+        setSelectedHotel(hotel);
+    };
+    const handleBackToList = () => {
+        setSelectedHotel(null);
+    };
+    const handleHomeClick = () => {
+        setView('general');
+        setSelectedHotel(null);
+    };
+
     return (
         <div className="w-1/4 p-4 bg-gray-100 overflow-y-auto h-screen">
             <div className="flex justify-between items-center mb-4">
@@ -51,7 +66,7 @@ export default function Sidebar({
             </div>
             <div className="flex space-x-4 mb-4">
                 <button
-                    onClick={() => setView('general')}
+                    onClick={handleHomeClick}
                     className={`p-2 rounded-md ${view === 'general' ? 'bg-primary text-secondary' : 'bg-gray-200'}`}
                     title="General"
                 >
@@ -73,14 +88,18 @@ export default function Sidebar({
                 </button>
             </div>
 
-            {view === 'general' && (
+            {view === 'general' && !selectedHotel && (
                 hotels.length === 0 ? (
                     <div className="text-center text-gray-500 mt-4">
                         Actualmente no cuentas con ningún registro.
                     </div>
                 ) : (
-                    <HotelList hotels={hotels} onSelectHotel={onSelectHotel} onDeleteHotel={onDeleteHotel} />
+                    <HotelList hotels={hotels} onSelectHotel={onSelectHotel} onDeleteHotel={onDeleteHotel} onShowDetails={handleShowDetails} />
                 )
+            )}
+
+            {view === 'general' && selectedHotel && (
+                <PropertyDetailsPanel property={selectedHotel} onBack={handleBackToList} />
             )}
 
             {view === 'user' && (
