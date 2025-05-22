@@ -7,6 +7,9 @@ const FILES_TO_UPDATE = [
   'src/screens/LoginScreen.tsx',
   'src/screens/HomeScreen.tsx',
   'src/screens/CreateHotelScreen.tsx',
+  'src/screens/ProfileScreen.tsx',
+  'src/screens/SharedHotelScreen.tsx',
+  'src/components/shared/ShareButton.tsx'
 ];
 
 async function getNgrokUrl() {

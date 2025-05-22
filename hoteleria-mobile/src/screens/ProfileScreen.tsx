@@ -15,7 +15,7 @@ const ProfileScreen = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [apiBaseUrl, setApiBaseUrl] = useState('https://77a8-190-60-32-86.ngrok-free.app'); // Ajustar según tu configuración
+    const [apiBaseUrl] = useState('https://32c4-186-103-58-124.ngrok-free.app');
 
     useEffect(() => {
         fetchUserProfile();
@@ -63,7 +63,6 @@ const ProfileScreen = () => {
                 return;
             }
 
-            // URL corregida para coincidir exactamente con la del frontend
             const response = await axios.patch(
                 `${apiBaseUrl}/users/me/chain-name`,
                 { chainName: userProfile.chainName },
@@ -77,8 +76,6 @@ const ProfileScreen = () => {
 
             console.log('Respuesta actualización:', response.data);
             Alert.alert('Éxito', 'El nombre de tu cadena hotelera ha sido actualizado.');
-
-            // Guardar el nuevo nombre de la cadena en SecureStore para usarlo en toda la app
             await SecureStore.setItemAsync('userChainName', userProfile.chainName);
         } catch (error) {
             console.error('Error al actualizar nombre de cadena:', error);

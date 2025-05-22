@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
-// Componentes de formulario
 import BasicInfoForm from '../components/forms/BasicInfoForm';
 import LocationForm from '../components/forms/LocationForm';
 import HotelSpecificForm from '../components/forms/HotelSpecificForm';
@@ -122,7 +121,7 @@ const CreateHotelScreen = () => {
         images: form.images ? form.images.split(',').map(i => i.trim()) : undefined,
       };
 
-      const response = await axios.post('https://77a8-190-60-32-86.ngrok-free.app/hotels', hotelData, {
+      const response = await axios.post('https://32c4-186-103-58-124.ngrok-free.app/hotels', hotelData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

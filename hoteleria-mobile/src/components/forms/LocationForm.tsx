@@ -18,7 +18,6 @@ interface LocationFormProps {
 }
 
 const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) => {
-    // Estado local para asegurarnos que la UI refleja el estado actual
     const [localForm, setLocalForm] = useState({
         address: form.address || '',
         city: form.city || '',
@@ -30,7 +29,6 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
     const [isLoading, setIsLoading] = useState(false);
     const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
 
-    // Sincronizamos el estado local con las props
     useEffect(() => {
         setLocalForm({
             address: form.address || '',
@@ -40,9 +38,7 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
         });
     }, [form]);
 
-    // Helper para actualizar la ubicación de manera consistente
     const updateLocation = (lat: number, lon: number, address: string, city: string) => {
-        // Actualizamos el estado local primero
         setLocalForm({
             latitude: lat.toString(),
             longitude: lon.toString(),
@@ -50,7 +46,6 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
             city: city
         });
 
-        // Luego actualizamos el estado del componente padre
         onChange('latitude', lat.toString());
         onChange('longitude', lon.toString());
         onChange('address', address);
@@ -116,7 +111,7 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
             suggestion.lat,
             suggestion.lon,
             suggestion.display_name,
-            localForm.city // Mantenemos la ciudad que el usuario ingresó
+            localForm.city
         );
 
         setModalVisible(false);
@@ -150,7 +145,6 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
             const { latitude, longitude } = location.coords;
             console.log(`Ubicación obtenida: Lat: ${latitude}, Lon: ${longitude}`);
 
-            // Hacer geocodificación inversa para obtener la dirección
             try {
                 const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
                     params: {
@@ -174,9 +168,6 @@ const LocationForm = ({ form, onChange, onLocationChange }: LocationFormProps) =
 
                 Alert.alert('Éxito', 'Se ha usado tu ubicación actual como dirección del inmueble');
             } catch (error) {
-                console.error('Error en geocodificación inversa:', error);
-
-                // En caso de error, al menos guardamos las coordenadas
                 updateLocation(latitude, longitude, 'Mi ubicación actual', localForm.city || 'Desconocida');
 
                 Alert.alert(
